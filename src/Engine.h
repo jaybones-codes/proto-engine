@@ -25,6 +25,7 @@ class Engine
     void clear();   // clear screen
     void present(); // show what is drawn
     void drawRect(float x, float y, float w, float h);
+
     // Game Loop
     bool isRunning() const
     {
