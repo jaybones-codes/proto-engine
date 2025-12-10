@@ -12,7 +12,7 @@ Engine::Engine(int width, int height, const char *title)
     }
     // Create the window
     m_window = SDL_CreateWindow(title, width, height, 0);
-
+    SDL_SetRenderVSync(m_renderer, SDL_RENDERER_VSYNC_DISABLED);
     if (!m_window)
     {
         error("Window Failed to create :");
@@ -30,6 +30,9 @@ Engine::Engine(int width, int height, const char *title)
     }
 
     m_initialized = true;
+
+    m_lastFrameTime = Clock::now();
+
     std::cout << "Engine initialized: " << width << "x" << height << '\n';
 }
 
@@ -122,7 +125,66 @@ void Engine::pollEvents()
         }
     }
 }
+void Engine::setTargetFPS(float fps)
+{
+    std::cout << "setTargetFPS called with: " << fps << "\n";
+    if (fps <= 0.0f)
+    {
+        std::cerr << "ERROR: Invalid FPS " << fps << ", setting to 60\n";
+        m_targetFps = 60.0f;
+    }
+    else
+    {
+        m_targetFps = fps;
+    }
+    std::cout << "m_targetFps is now: " << m_targetFps << "\n";
+}
+void Engine::updateDeltaTime()
+{
+    auto currentTime = Clock::now();
+    auto duration = currentTime - m_lastFrameTime;
+    m_deltaTime = std::chrono::duration<float>(duration).count();
+    m_lastFrameTime = currentTime;
 
+    m_frameCount++;
+    m_fpsUpdateTimer += m_deltaTime;
+    if (m_fpsUpdateTimer >= 1.0)
+    {
+        m_fps = m_frameCount / m_fpsUpdateTimer;
+        std::cout << "FPS = " << m_fps << "\n";
+        m_fpsUpdateTimer = 0;
+        m_frameCount = 0;
+    }
+}
+void Engine::limitFrameRate()
+{
+    float targetFrameTime = 1.0f / m_targetFps;
+    float frameTimeElapsed = m_deltaTime;
+    if (m_targetFps <= 0.0f)
+    {
+        std::cerr << "ERROR: m_targetFps is " << m_targetFps << "! Returning.\n";
+        return; // Don't try to limit with invalid FPS
+    }
+
+    if (frameTimeElapsed < targetFrameTime)
+    {
+        float sleepTime = targetFrameTime - frameTimeElapsed;
+        Uint32 delayMs = static_cast<Uint32>(sleepTime * 1000.0f);
+
+        if (delayMs > 0)
+        {
+            SDL_Delay(delayMs);
+        }
+    }
+
+    // Update delta time again AFTER sleeping
+    auto currentTime = Clock::now();
+    auto duration = currentTime - m_lastFrameTime;
+    m_deltaTime = std::chrono::duration<float>(duration).count();
+    m_lastFrameTime = currentTime;
+
+    std::cout << "  New deltaTime after sleep: " << m_deltaTime << "\n";
+}
 int error(std::string errorMsg)
 {
     std::cerr << errorMsg << SDL_GetError() << '\n';
