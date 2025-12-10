@@ -182,8 +182,6 @@ void Engine::limitFrameRate()
     auto duration = currentTime - m_lastFrameTime;
     m_deltaTime = std::chrono::duration<float>(duration).count();
     m_lastFrameTime = currentTime;
-
-    std::cout << "  New deltaTime after sleep: " << m_deltaTime << "\n";
 }
 int error(std::string errorMsg)
 {
