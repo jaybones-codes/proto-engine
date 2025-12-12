@@ -1,8 +1,8 @@
 #pragma once
+#include "Input.h"
 #include <SDL3/SDL.h>
 #include <chrono>
 #include <iostream>
-
 class Engine
 {
 
@@ -46,6 +46,14 @@ class Engine
     void setTargetFPS(float fps);
 
     void limitFrameRate();
+    Input &getInput()
+    {
+        return m_input;
+    }
+    const Input &getInput() const
+    {
+        return m_input;
+    }
 
   private:
     using Clock = std::chrono::high_resolution_clock;
@@ -62,6 +70,7 @@ class Engine
     float m_targetFps = 0.0f;
 
     int m_frameCount = 0;
+    Input m_input;
 
   public:
     float m_fpsUpdateTimer = 0.0f;

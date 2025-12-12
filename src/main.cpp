@@ -3,61 +3,46 @@
 
 int main()
 {
-    Engine engine(800, 600, "Frame Rate Test");
+    Engine engine(800, 600, "Input Test");
     if (!engine.isInitialized())
         return -1;
 
-    std::cout << "=== Testing 60 FPS ===\n";
-    engine.setTargetFPS(60);
+    float x = 400.0f;
+    float y = 300.0f;
+    float speed = 300.0f;
 
-    int frameCount = 0;
-    auto startTime = std::chrono::high_resolution_clock::now();
-
-    while (engine.isRunning() && frameCount < 180)
+    while (engine.isRunning())
     {
         engine.updateDeltaTime();
         engine.pollEvents();
 
-        engine.clear();
-        engine.drawRect(350, 250, 100, 100);
-        engine.present();
+        const Input &input = engine.getInput();
+        float dt = engine.getDeltaTime();
 
-        engine.limitFrameRate();
+        // WASD movement using axes
+        float horizontal = input.getAxis(SDL_SCANCODE_A, SDL_SCANCODE_D);
+        float vertical = input.getAxis(SDL_SCANCODE_W, SDL_SCANCODE_S);
 
-        frameCount++;
-    }
+        x += horizontal * speed * dt;
+        y += vertical * speed * dt;
 
-    auto endTime = std::chrono::high_resolution_clock::now();
-    float totalTime = std::chrono::duration<float>(endTime - startTime).count();
+        // Test key press detection
+        if (input.isKeyPressed(SDL_SCANCODE_SPACE))
+        {
+            std::cout << "Jump!\n";
+        }
 
-    std::cout << "60 FPS: " << frameCount << " frames in " << totalTime << "s = " << (frameCount / totalTime)
-              << " FPS\n\n";
-
-    std::cout << "=== Testing 30 FPS ===\n";
-    engine.setTargetFPS(30);
-
-    frameCount = 0;
-    startTime = std::chrono::high_resolution_clock::now();
-
-    while (engine.isRunning() && frameCount < 90)
-    {
-        engine.updateDeltaTime();
-        engine.pollEvents();
+        // Test mouse input
+        if (input.isMouseButtonPressed(0))
+        {
+            std::cout << "Click at (" << input.getMouseX() << ", " << input.getMouseY() << ")\n";
+        }
 
         engine.clear();
-        engine.drawRect(350, 250, 100, 100);
+        engine.drawRect(x - 50, y - 50, 100, 100);
         engine.present();
-
         engine.limitFrameRate();
-
-        frameCount++;
     }
-
-    endTime = std::chrono::high_resolution_clock::now();
-    totalTime = std::chrono::duration<float>(endTime - startTime).count();
-
-    std::cout << "30 FPS: " << frameCount << " frames in " << totalTime << "s = " << (frameCount / totalTime)
-              << " FPS\n";
 
     return 0;
 }

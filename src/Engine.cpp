@@ -116,9 +116,17 @@ void Engine::drawRect(float x, float y, float w, float h)
 // Game Loop
 void Engine::pollEvents()
 {
+    // QUESTION: Why update BEFORE processing events?
+    // THINK: What happens to Pressed state if we update AFTER?
+    m_input.update();
+
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
+        // Let input system process event
+        m_input.processEvent(event);
+
+        // Check for quit
         if (event.type == SDL_EVENT_QUIT)
         {
             m_running = false;
@@ -162,7 +170,6 @@ void Engine::limitFrameRate()
     float frameTimeElapsed = m_deltaTime;
     if (m_targetFps <= 0.0f)
     {
-        std::cerr << "ERROR: m_targetFps is " << m_targetFps << "! Returning.\n";
         return; // Don't try to limit with invalid FPS
     }
 
